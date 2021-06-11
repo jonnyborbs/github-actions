@@ -1,14 +1,6 @@
 #init the backend
 terraform {
-  backend "remote" {
-    hostname = "app.terraform.io"
-    organization = "jschulman"
 
-    workspaces {
-      name = "tfe-demo-app"
-
-    }
-  }
 }
 
 # Specify the provider and access details
@@ -176,9 +168,6 @@ resource "aws_instance" "web" {
       "sudo /bin/sed -i \"s@root /var/www/html@root /usr/share/nginx/html@\" /etc/nginx/sites-available/default",
       "sudo /bin/systemctl restart nginx",
       "sudo ufw allow http",
-      "sudo apt install python3-pip -y",
-      "/usr/bin/pip3 install awscli --upgrade --user",
-      "~/.local/bin/aws sns publish --target-arn ${module.notify-slack.this_slack_topic_arn} --region ${var.aws_region} --message \"server provisioned at ip ${aws_instance.web.public_ip}\"",
     ]
   }
   tags = {
@@ -187,13 +176,4 @@ resource "aws_instance" "web" {
     CostCenter = "TFE-PM-0001"
     Name = "Clarity TF Demo App"
   }
-}
-
-module "notify-slack" {
-  source  = "app.terraform.io/jschulman/notify-slack/aws"
-  version = "2.0.0"
-  sns_topic_name = "${var.slack_topic_name}"
-  slack_webhook_url = "${var.slack_webhook_url}"
-  slack_channel     = "jms-notifications"
-  slack_username    = "jms-tfe-slack"
 }
